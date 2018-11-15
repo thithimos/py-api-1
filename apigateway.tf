@@ -12,43 +12,24 @@ resource "aws_api_gateway_authorizer" "api_authorizer" {
   identity_validation_expression = "Bearer (.*)"
 }
 
-resource "aws_api_gateway_resource" "proxy" {
+resource "aws_api_gateway_resource" "auth0_test" {
   rest_api_id = "${aws_api_gateway_rest_api.py_api_1.id}"
   parent_id   = "${aws_api_gateway_rest_api.py_api_1.root_resource_id}"
-  path_part   = "{proxy+}"
+  path_part   = "auth0_test"
 }
 
-resource "aws_api_gateway_method" "proxy" {
+resource "aws_api_gateway_method" "auth0_test_method" {
   rest_api_id   = "${aws_api_gateway_rest_api.py_api_1.id}"
-  resource_id   = "${aws_api_gateway_resource.proxy.id}"
-  http_method   = "ANY"
+  resource_id   = "${aws_api_gateway_resource.auth0_test.id}"
+  http_method   = "GET"
   authorization = "CUSTOM"
   authorizer_id = "${aws_api_gateway_authorizer.api_authorizer.id}"
 }
 
 resource "aws_api_gateway_integration" "lambda" {
   rest_api_id = "${aws_api_gateway_rest_api.py_api_1.id}"
-  resource_id = "${aws_api_gateway_method.proxy.resource_id}"
-  http_method = "${aws_api_gateway_method.proxy.http_method}"
-
-  integration_http_method = "POST"
-  type                    = "AWS_PROXY"
-  uri                     = "${aws_lambda_function.py_lambda_1.invoke_arn}"
-}
-
-resource "aws_api_gateway_method" "proxy_root" {
-  rest_api_id   = "${aws_api_gateway_rest_api.py_api_1.id}"
-  resource_id   = "${aws_api_gateway_rest_api.py_api_1.root_resource_id}"
-  http_method   = "ANY"
-  authorization = "CUSTOM"
-  authorizer_id = "${aws_api_gateway_authorizer.api_authorizer.id}"
-}
-
-resource "aws_api_gateway_integration" "lambda_root" {
-  rest_api_id = "${aws_api_gateway_rest_api.py_api_1.id}"
-  resource_id = "${aws_api_gateway_method.proxy_root.resource_id}"
-  http_method = "${aws_api_gateway_method.proxy_root.http_method}"
-
+  resource_id = "${aws_api_gateway_resource.auth0_test.id}"
+  http_method = "${aws_api_gateway_method.auth0_test_method.http_method}"
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = "${aws_lambda_function.py_lambda_1.invoke_arn}"
@@ -56,14 +37,11 @@ resource "aws_api_gateway_integration" "lambda_root" {
 
 resource "aws_api_gateway_deployment" "deployment" {
   depends_on = [
-    "aws_api_gateway_integration.lambda",
-    "aws_api_gateway_integration.lambda_root",
+    "aws_api_gateway_integration.lambda"
   ]
-
   rest_api_id = "${aws_api_gateway_rest_api.py_api_1.id}"
   stage_name  = "v0"
 }
-
 
 resource "aws_iam_role" "invocation_role" {
   name = "api_gateway_auth_invocation"

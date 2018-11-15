@@ -1,3 +1,3 @@
 def handler(event, context):
-    print("Client token: " + event['authorizationToken'])
+    print("Client token: " + event['headers']['authorization'])
     raise Exception('Unauthorized')
