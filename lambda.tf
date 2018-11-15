@@ -6,7 +6,7 @@ resource "aws_lambda_function" "py_lambda_1" {
   function_name = "py_lambda_1"
 
   s3_bucket = "py-api-1"
-  s3_key    = "v0/py_api_2.zip"
+  s3_key    = "py-api-v0.zip"
 
   handler = "main.handler"
   runtime = "python3.6"
@@ -68,3 +68,17 @@ resource "aws_lambda_permission" "apigw" {
   # within the API Gateway "REST API".
   source_arn = "${aws_api_gateway_deployment.deployment.execution_arn}/*/*"
 }
+
+
+resource "aws_lambda_function" "authorizer" {
+  function_name = "authorizer"
+
+  s3_bucket = "py-api-1"
+  s3_key    = "authorizer-v0.zip"
+
+  handler = "authorizer.handler"
+  runtime = "python3.6"
+  memory_size = "128"
+  role = "${aws_iam_role.py_lambda_1_role.arn}"
+}
+
