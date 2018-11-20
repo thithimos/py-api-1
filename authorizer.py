@@ -3,6 +3,9 @@ import jwt
 import urllib.request
 import json
 
+from cryptography.hazmat.backends import default_backend
+from cryptography.x509 import load_pem_x509_certificate
+
 def handler(event, context):
     authorization_header_value = event['headers']['Authorization']
     print(f"Authorization header value: {authorization_header_value}")
