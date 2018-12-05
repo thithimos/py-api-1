@@ -9,7 +9,7 @@ resource "aws_lambda_function" "py_lambda_1" {
   s3_key    = "py-api-v0.zip"
 
   handler = "main.handler"
-  runtime = "python3.6"
+  runtime = "python2.7"
   memory_size = "256"
   role = "${aws_iam_role.py_lambda_1_role.arn}"
 }
@@ -77,8 +77,8 @@ resource "aws_lambda_function" "authorizer" {
   s3_key    = "authorizer-v0.zip"
 
   handler = "authorizer.handler"
-  runtime = "python3.6"
-  memory_size = "128"
+  runtime = "python2.7"
+  memory_size = "256"
   role = "${aws_iam_role.py_lambda_1_role.arn}"
 }
 

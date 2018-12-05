@@ -1,6 +1,6 @@
 import os
 import jwt
-import urllib.request
+import urllib2
 import json
 
 from cryptography.hazmat.backends import default_backend
@@ -8,7 +8,7 @@ from cryptography.x509 import load_pem_x509_certificate
 
 def handler(event, context):
     authorization_header_value = event['headers']['Authorization']
-    print(f"Authorization header value: {authorization_header_value}")
+    print("Authorization header value: " + authorization_header_value)
 
     if not authorization_header_value:
         raise Exception('Unauthorized')
@@ -27,12 +27,12 @@ def handler(event, context):
     
     token = token_parts[1]
     
-    #check the signature algo
-    with urllib.request.urlopen('https://thithimos.auth0.com/.well-known/jwks.json') as response:
+    #TODO:check the signature algo?
+    with urllib2.urlopen('https://thithimos.auth0.com/.well-known/jwks.json') as response:
         jwks = json.loads(response.read())
-        print(f'jwks: {jwks}')
+        print('jwks: ' + jwks)
         unverified_header = jwt.get_unverified_header(token)
-        print(f'unverified_header: {unverified_header}')
+        print('unverified_header: ' + unverified_header)
 
     rsa_key = {}
     public_key = ''
@@ -50,13 +50,6 @@ def handler(event, context):
     if rsa_key:
         try:
             principal_id = jwt_verify(token, public_key)
-            #principal_id = jwt.decode(
-            #    token,
-            #    public_key,
-            #    algorithms=['RS256'],
-            #    audience='https://api-cancel-auth.tripsource.com',
-            #    issuer='https://thithimos.auth0.com/'
-            #)
         except jwt.ExpiredSignatureError:
             print('token expired')
             raise Exception('Unauthorized')
@@ -67,10 +60,10 @@ def handler(event, context):
             print('decode error')
             raise Exception('Unauthorized')
         except jwt.InvalidTokenError as e:
-            print(f'invalid token error: {e}')
+            print('invalid token error: ' + e)
             raise Exception('Unauthorized')
         except Exception as e:
-            print(f'invalid header - unable to parse authentication token: {e}')
+            print('invalid header - unable to parse authentication token: ' + e)
             raise Exception('Unauthorized')
 
         policy = generate_policy(principal_id, 'Allow', event['methodArn'])
@@ -79,7 +72,7 @@ def handler(event, context):
     print('unable to find appropriate key')
     raise Exception('Unauthorized')
 
-    #check the permissions
+    #TODO:check the permissions
 
 def jwt_verify(auth_token, public_key):
     public_key = format_public_key(public_key)
