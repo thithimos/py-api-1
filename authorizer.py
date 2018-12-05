@@ -1,6 +1,6 @@
 import os
 import jwt
-import urllib2
+import urllib
 import json
 
 from cryptography.hazmat.backends import default_backend
@@ -28,11 +28,13 @@ def handler(event, context):
     token = token_parts[1]
     
     #TODO:check the signature algo?
-    with urllib2.urlopen('https://thithimos.auth0.com/.well-known/jwks.json') as response:
-        jwks = json.loads(response.read())
-        print('jwks: ' + jwks)
-        unverified_header = jwt.get_unverified_header(token)
-        print('unverified_header: ' + unverified_header)
+    response  = urllib.urlopen('https://thithimos.auth0.com/.well-known/jwks.json')
+    jwks = json.loads(response.read())
+    print('jwks:')
+    print(jwks)
+    unverified_header = jwt.get_unverified_header(token)
+    print('unverified_header:')
+    print(unverified_header)
 
     rsa_key = {}
     public_key = ''
@@ -60,10 +62,12 @@ def handler(event, context):
             print('decode error')
             raise Exception('Unauthorized')
         except jwt.InvalidTokenError as e:
-            print('invalid token error: ' + e)
+            print('invalid token error:')
+            print(e)
             raise Exception('Unauthorized')
         except Exception as e:
-            print('invalid header - unable to parse authentication token: ' + e)
+            print('invalid header - unable to parse authentication token:')
+            print(e)
             raise Exception('Unauthorized')
 
         policy = generate_policy(principal_id, 'Allow', event['methodArn'])
