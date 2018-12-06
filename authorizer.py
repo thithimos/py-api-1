@@ -30,6 +30,8 @@ def handler(event, context):
     #TODO:check the signature algo?
     response  = urllib.urlopen('https://thithimos.auth0.com/.well-known/jwks.json')
     jwks = json.loads(response.read())
+    print('response:')
+    print(response.read())
     print('jwks:')
     print(jwks)
     unverified_header = jwt.get_unverified_header(token)
@@ -51,6 +53,8 @@ def handler(event, context):
 
     if rsa_key:
         try:
+            print('token:')
+            print(token)
             principal_id = jwt_verify(token, public_key)
         except jwt.ExpiredSignatureError:
             print('token expired')
@@ -87,8 +91,11 @@ def jwt_verify(auth_token, public_key):
 
 def format_public_key(public_key):
     public_key = public_key.replace('\n', ' ').replace('\r', '')
+    print(public_key)
     public_key = public_key.replace('-----BEGIN CERTIFICATE-----', '-----BEGIN CERTIFICATE-----\n')
+    print(public_key)
     public_key = public_key.replace('-----END CERTIFICATE-----', '\n-----END CERTIFICATE-----')
+    print(public_key)
     return public_key
 
 
