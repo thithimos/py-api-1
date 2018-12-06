@@ -29,9 +29,10 @@ def handler(event, context):
     
     #TODO:check the signature algo?
     response  = urllib.urlopen('https://thithimos.auth0.com/.well-known/jwks.json')
-    jwks = json.loads(response.read())
+    res = response.read()
     print('response:')
-    print(response.read())
+    print(res)
+    jwks = json.loads(res)
     print('jwks:')
     print(jwks)
     unverified_header = jwt.get_unverified_header(token)
@@ -49,12 +50,10 @@ def handler(event, context):
                 "n": key["n"],
                 "e": key["e"]
             }
-            public_key = key['x5c']
+            public_key = key['x5c'][0]
 
     if rsa_key:
         try:
-            print('token:')
-            print(token)
             principal_id = jwt_verify(token, public_key)
         except jwt.ExpiredSignatureError:
             print('token expired')
@@ -90,13 +89,7 @@ def jwt_verify(auth_token, public_key):
 
 
 def format_public_key(public_key):
-    public_key = public_key.replace('\n', ' ').replace('\r', '')
-    print(public_key)
-    public_key = public_key.replace('-----BEGIN CERTIFICATE-----', '-----BEGIN CERTIFICATE-----\n')
-    print(public_key)
-    public_key = public_key.replace('-----END CERTIFICATE-----', '\n-----END CERTIFICATE-----')
-    print(public_key)
-    return public_key
+    return '-----BEGIN CERTIFICATE-----\n' + public_key + '\n-----END CERTIFICATE-----'
 
 
 def convert_certificate_to_pem(public_key):
@@ -116,7 +109,6 @@ def generate_policy(principal_id, effect, resource):
                     "Action": "execute-api:Invoke",
                     "Effect": effect,
                     "Resource": resource
-
                 }
             ]
         }
